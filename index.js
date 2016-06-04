@@ -14,7 +14,7 @@ var UnauthorizedRequestError = require('oauth2-server/lib/errors/unauthorized-re
  * Constructor.
  */
 
-function ExpressOAuthServer(options) {
+function RestifyOAuthServer(options) {
   options = options || {};
 
   if (!options.model) {
@@ -32,7 +32,7 @@ function ExpressOAuthServer(options) {
  * (See: https://tools.ietf.org/html/rfc6749#section-7)
  */
 
-ExpressOAuthServer.prototype.authenticate = function(options) {
+RestifyOAuthServer.prototype.authenticate = function(options) {
   var server = this.server;
 
   return function(req, res, next) {
@@ -44,7 +44,7 @@ ExpressOAuthServer.prototype.authenticate = function(options) {
         return server.authenticate(request, response, options);
       })
       .tap(function(token) {
-        res.locals.oauth = { token: token };
+        res.oauth = { token: token };
       })
       .catch(function(e) {
         return handleError(e, req, res);
@@ -61,7 +61,7 @@ ExpressOAuthServer.prototype.authenticate = function(options) {
  * (See: https://tools.ietf.org/html/rfc6749#section-3.1)
  */
 
-ExpressOAuthServer.prototype.authorize = function(options) {
+RestifyOAuthServer.prototype.authorize = function(options) {
   var server = this.server;
 
   return function(req, res, next) {
@@ -73,7 +73,7 @@ ExpressOAuthServer.prototype.authorize = function(options) {
         return server.authorize(request, response, options);
       })
       .tap(function(code) {
-        res.locals.oauth = { code: code };
+        res.oauth = { code: code };
       })
       .then(function() {
         return handleResponse(req, res, response);
@@ -93,7 +93,7 @@ ExpressOAuthServer.prototype.authorize = function(options) {
  * (See: https://tools.ietf.org/html/rfc6749#section-3.2)
  */
 
-ExpressOAuthServer.prototype.token = function(options) {
+RestifyOAuthServer.prototype.token = function(options) {
   var server = this.server;
 
   return function(req, res, next) {
@@ -105,7 +105,7 @@ ExpressOAuthServer.prototype.token = function(options) {
         return server.token(request, response, options);
       })
       .tap(function(token) {
-        res.locals.oauth = { token: token };
+        res.oauth = { token: token };
       })
       .then(function() {
         return handleResponse(req, res, response);
@@ -123,7 +123,8 @@ ExpressOAuthServer.prototype.token = function(options) {
 
 var handleResponse = function(req, res, response) {
   res.set(response.headers);
-  res.status(response.status).send(response.body);
+  res.status(response.status);
+  res.send(response.body);
 };
 
 /**
@@ -139,11 +140,12 @@ var handleError = function(e, req, res, response) {
     return res.status(e.code);
   }
 
-  res.status(e.code).send({ error: e.name, error_description: e.message });
+  res.status(e.code);
+  res.send({ error: e.name, error_description: e.message });
 };
 
 /**
  * Export constructor.
  */
 
-module.exports = ExpressOAuthServer;
+module.exports = RestifyOAuthServer;

@@ -3,32 +3,37 @@
  * Module dependencies.
  */
 
-var ExpressOAuthServer = require('../../');
+var RestifyOAuthServer = require('../../');
 var InvalidArgumentError = require('oauth2-server/lib/errors/invalid-argument-error');
 var NodeOAuthServer = require('oauth2-server');
-var bodyparser = require('body-parser');
-var express = require('express');
+var restify = require('restify');
 var request = require('supertest');
 var should = require('should');
 
 /**
- * Test `ExpressOAuthServer`.
+ * Test `RestifyOAuthServer`.
  */
 
-describe('ExpressOAuthServer', function() {
+describe('RestifyOAuthServer', function() {
   var app;
 
   beforeEach(function() {
-    app = express();
+    app = restify.createServer();
 
-    app.use(bodyparser.json());
-    app.use(bodyparser.urlencoded({ extended: false }));
+    app.use(restify.acceptParser(app.acceptable));
+    app.use(restify.authorizationParser());
+    app.use(restify.queryParser());
+    app.use(restify.bodyParser());
+    app.use(function(req, res, next) {
+      if(req.headers['content-type'] === 'application/x-www-form-urlencoded') req.body = req.params;
+      return next();
+    });
   });
 
   describe('constructor()', function() {
     it('should throw an error if `model` is missing', function() {
       try {
-        new ExpressOAuthServer({});
+        new RestifyOAuthServer({});
 
         should.fail();
       } catch (e) {
@@ -38,7 +43,7 @@ describe('ExpressOAuthServer', function() {
     });
 
     it('should set the `server`', function() {
-      var oauth = new ExpressOAuthServer({ model: {} });
+      var oauth = new RestifyOAuthServer({ model: {} });
 
       oauth.server.should.be.an.instanceOf(NodeOAuthServer);
     });
@@ -46,9 +51,9 @@ describe('ExpressOAuthServer', function() {
 
   describe('authenticate()', function() {
     it('should return an error if `model` is empty', function(done) {
-      var oauth = new ExpressOAuthServer({ model: {} });
+      var oauth = new RestifyOAuthServer({ model: {} });
 
-      app.use(oauth.authenticate());
+      app.get('/', oauth.authenticate());
 
       request(app.listen())
         .get('/')
@@ -63,14 +68,11 @@ describe('ExpressOAuthServer', function() {
           return token;
         }
       };
-      var oauth = new ExpressOAuthServer({ model: model });
+      var oauth = new RestifyOAuthServer({ model: model });
 
-      app.use(oauth.authenticate());
-
-      app.use(function(req, res, next) {
+      app.get('/', oauth.authenticate(), function(req, res, next) {
         res.send();
-
-        next();
+        return next();
       });
 
       request(app.listen())
@@ -87,13 +89,11 @@ describe('ExpressOAuthServer', function() {
           return token;
         }
       };
-      var oauth = new ExpressOAuthServer({ model: model });
+      var oauth = new RestifyOAuthServer({ model: model });
 
-      app.use(oauth.authenticate());
-
-      app.use(function(req, res, next) {
-        res.locals.oauth.token.should.equal(token);
-
+      app.get('/', oauth.authenticate(), function(req, res, next) {
+        res.oauth.token.should.equal(token);
+        res.send();
         next();
       });
 
@@ -118,15 +118,9 @@ describe('ExpressOAuthServer', function() {
           return code;
         }
       };
-      var oauth = new ExpressOAuthServer({ model: model });
+      var oauth = new RestifyOAuthServer({ model: model });
 
-      app.use(oauth.authorize());
-
-      app.use(function(req, res, next) {
-        res.locals.oauth.code.should.equal(code);
-
-        next();
-      });
+      app.post('/', oauth.authorize());
 
       request(app.listen())
         .post('/?state=foobiz')
@@ -147,9 +141,11 @@ describe('ExpressOAuthServer', function() {
           return {};
         }
       };
-      var oauth = new ExpressOAuthServer({ model: model });
+      var oauth = new RestifyOAuthServer({ model: model });
 
-      app.use(oauth.authorize());
+      app.use();
+
+      app.post('/', oauth.authorize());
 
       request(app.listen())
         .post('/?state=foobiz')
@@ -171,9 +167,9 @@ describe('ExpressOAuthServer', function() {
           return { authorizationCode: 123 };
         }
       };
-      var oauth = new ExpressOAuthServer({ model: model });
+      var oauth = new RestifyOAuthServer({ model: model });
 
-      app.use(oauth.authorize());
+      app.post('/', oauth.authorize());
 
       request(app.listen())
         .post('/?state=foobiz')
@@ -184,9 +180,9 @@ describe('ExpressOAuthServer', function() {
     });
 
     it('should return an error if `model` is empty', function(done) {
-      var oauth = new ExpressOAuthServer({ model: {} });
+      var oauth = new RestifyOAuthServer({ model: {} });
 
-      app.use(oauth.authorize());
+      app.post('/', oauth.authorize());
 
       request(app)
         .post('/')
@@ -209,12 +205,12 @@ describe('ExpressOAuthServer', function() {
           return token;
         }
       };
-      var oauth = new ExpressOAuthServer({ model: model });
+      var oauth = new RestifyOAuthServer({ model: model });
 
       app.use(oauth.token());
 
-      app.use(function(req, res, next) {
-        res.locals.oauth.token.should.equal(token);
+      app.post('/', function(req, res, next) {
+        res.oauth.token.should.equal(token);
 
         next();
       });
@@ -238,9 +234,9 @@ describe('ExpressOAuthServer', function() {
           return { accessToken: 'foobar', client: {}, user: {} };
         }
       };
-      var oauth = new ExpressOAuthServer({ model: model });
+      var oauth = new RestifyOAuthServer({ model: model });
 
-      app.use(oauth.token());
+      app.post('/', oauth.token());
 
       request(app.listen())
         .post('/')
@@ -261,9 +257,9 @@ describe('ExpressOAuthServer', function() {
           return { accessToken: 'foobar', client: {}, refreshToken: 'foobiz', user: {} };
         }
       };
-      var oauth = new ExpressOAuthServer({ model: model });
+      var oauth = new RestifyOAuthServer({ model: model });
 
-      app.use(oauth.token());
+      app.post('/', oauth.token());
 
       request(app.listen())
         .post('/')
@@ -273,9 +269,9 @@ describe('ExpressOAuthServer', function() {
     });
 
     it('should return an error if `model` is empty', function(done) {
-      var oauth = new ExpressOAuthServer({ model: {} });
+      var oauth = new RestifyOAuthServer({ model: {} });
 
-      app.use(oauth.token());
+      app.post('/', oauth.token());
 
       request(app.listen())
         .post('/')

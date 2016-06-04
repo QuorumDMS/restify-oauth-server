@@ -1,7 +1,7 @@
 {
-  "name": "express-oauth-server",
-  "version": "1.0.0",
-  "description": "OAuth provider for express",
+  "name": "restify-oauth-server",
+  "version": "0.1.0",
+  "description": "OAuth provider for restify",
   "main": "index.js",
   "scripts": {
     "lint": "jshint .",
@@ -9,26 +9,25 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/seegno/express-oauth-server"
+    "url": "git://github.com/AndrewAskins/restify-oauth-server"
   },
   "keywords": [
-    "express",
+    "restify",
     "oauth",
     "oauth2"
   ],
   "author": {
-    "name": "Nuno Sousa",
-    "email": "nfs@seegno.com"
+    "name": "Andrew Askins",
+    "email": "r.andrew.askins@gmail.com"
   },
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "bluebird": "^3.0.5",
-    "express": "^4.13.3",
+    "restify": "^4.0.4",
     "oauth2-server": "next",
     "thenify": "^3.0.0"
   },
   "devDependencies": {
-    "body-parser": "^1.14.1",
     "jshint": "^2.8.0",
     "mocha": "^2.3.3",
     "should": "^7.1.0",

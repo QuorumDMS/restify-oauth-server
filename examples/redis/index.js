@@ -3,16 +3,22 @@
  * Module dependencies.
  */
 
-var bodyParser = require('body-parser');
-var express = require('express');
+var restify = require('restify');
 var oauthServer = require('oauth2-server');
 
 // Create an Express application.
-var app = express();
+var app = restify.createServer();
 
-// Add body parser.
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+server.use(restify.acceptParser(server.acceptable));
+server.use(restify.authorizationParser());
+server.use(restify.bodyParser());
+
+// Node Oauth2 Server expects the token request to be x-www-url-formencoded according to the Oauth2 spec
+// Restify's body parser puts formencoded params in req.params, so we'll need a quick little bit of middleware to copy them over to the body
+server.use(function(req, res, next) {
+  if(req.headers['content-type'] === 'application/x-www-url-formencoded') req.body = req.params;
+  return next();
+});
 
 // Add OAuth server.
 app.oauth = oauthServer({

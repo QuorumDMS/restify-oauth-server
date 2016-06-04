@@ -3,32 +3,35 @@
  * Module dependencies.
  */
 
-var ExpressOAuthServer = require('../../');
+var RestifyOAuthServer = require('../../');
 var Request = require('oauth2-server').Request;
 var Response = require('oauth2-server').Response;
-var express = require('express');
+var restify = require('restify');
 var request = require('supertest');
 var sinon = require('sinon');
 var should = require('should');
 
 /**
- * Test `ExpressOAuthServer`.
+ * Test `RestifyOAuthServer`.
  */
 
-describe('ExpressOAuthServer', function() {
+describe('RestifyOAuthServer', function() {
   var app;
 
   beforeEach(function() {
-    app = express();
+    app = restify.createServer();
   });
 
   describe('authenticate()', function() {
     it('should call `authenticate()`', function(done) {
-      var oauth = new ExpressOAuthServer({ model: {} });
+      var oauth = new RestifyOAuthServer({ model: {} });
 
       sinon.stub(oauth.server, 'authenticate').returns({});
 
-      app.use(oauth.authenticate());
+      app.get('/', oauth.authenticate(), function(req, res, next) {
+          res.send();
+          return next();
+      });
 
       request(app.listen())
         .get('/')
@@ -45,11 +48,14 @@ describe('ExpressOAuthServer', function() {
     });
 
     it('should call `authenticate()` with options', function(done) {
-      var oauth = new ExpressOAuthServer({ model: {} });
+      var oauth = new RestifyOAuthServer({ model: {} });
 
       sinon.stub(oauth.server, 'authenticate').returns({});
 
-      app.use(oauth.authenticate({options: true}));
+      app.get('/', oauth.authenticate({options: true}), function(req, res, next) {
+          res.send();
+          return next();
+      });
 
       request(app.listen())
         .get('/')
@@ -68,11 +74,11 @@ describe('ExpressOAuthServer', function() {
 
   describe('authorize()', function() {
     it('should call `authorize()`', function(done) {
-      var oauth = new ExpressOAuthServer({ model: {} });
+      var oauth = new RestifyOAuthServer({ model: {} });
 
       sinon.stub(oauth.server, 'authorize').returns({});
 
-      app.use(oauth.authorize());
+      app.get('/', oauth.authorize());
 
       request(app.listen())
         .get('/')
@@ -89,11 +95,11 @@ describe('ExpressOAuthServer', function() {
     });
 
     it('should call `authorize()` with options', function(done) {
-      var oauth = new ExpressOAuthServer({ model: {} });
+      var oauth = new RestifyOAuthServer({ model: {} });
 
       sinon.stub(oauth.server, 'authorize').returns({});
 
-      app.use(oauth.authorize({options: true}));
+      app.get('/', oauth.authorize({options: true}));
 
       request(app.listen())
         .get('/')
@@ -112,11 +118,11 @@ describe('ExpressOAuthServer', function() {
 
   describe('token()', function() {
     it('should call `token()`', function(done) {
-      var oauth = new ExpressOAuthServer({ model: {} });
+      var oauth = new RestifyOAuthServer({ model: {} });
 
       sinon.stub(oauth.server, 'token').returns({});
 
-      app.use(oauth.token());
+      app.get('/', oauth.token());
 
       request(app.listen())
         .get('/')
@@ -133,11 +139,11 @@ describe('ExpressOAuthServer', function() {
     });
 
     it('should call `token()` with options', function(done) {
-      var oauth = new ExpressOAuthServer({ model: {} });
+      var oauth = new RestifyOAuthServer({ model: {} });
 
       sinon.stub(oauth.server, 'token').returns({});
 
-      app.use(oauth.token({options: true}));
+      app.get('/', oauth.token({options: true}));
 
       request(app.listen())
         .get('/')
