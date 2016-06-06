@@ -136,10 +136,6 @@ var handleError = function(e, req, res, response) {
     res.set(response.headers);
   }
 
-  if (e instanceof UnauthorizedRequestError) {
-    return res.status(e.code);
-  }
-
   res.status(e.code);
   res.send({ error: e.name, error_description: e.message });
 };
