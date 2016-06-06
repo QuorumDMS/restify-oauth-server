@@ -1,6 +1,6 @@
 {
   "name": "restify-oauth-server",
-  "version": "0.1.1",
+  "version": "0.1.0",
   "description": "OAuth provider for restify",
   "main": "index.js",
   "scripts": {
