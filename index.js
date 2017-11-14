@@ -32,24 +32,24 @@ function RestifyOAuthServer(options) {
  * (See: https://tools.ietf.org/html/rfc6749#section-7)
  */
 
-RestifyOAuthServer.prototype.authenticate = function(options) {
+RestifyOAuthServer.prototype.authenticate = function (options) {
   var server = this.server;
 
-  return function(req, res, next) {
+  return function (req, res, next) {
     var request = new Request(req);
     var response = new Response(res);
 
     return Promise.bind(this)
-      .then(function() {
+      .then(function () {
         return server.authenticate(request, response, options);
       })
-      .tap(function(token) {
+      .tap(function (token) {
         res.oauth = { token: token };
+        return next;
       })
-      .catch(function(e) {
+      .catch(function (e) {
         return handleError(e, req, res);
-      })
-      .finally(next);
+      });
   };
 };
 
@@ -61,24 +61,24 @@ RestifyOAuthServer.prototype.authenticate = function(options) {
  * (See: https://tools.ietf.org/html/rfc6749#section-3.1)
  */
 
-RestifyOAuthServer.prototype.authorize = function(options) {
+RestifyOAuthServer.prototype.authorize = function (options) {
   var server = this.server;
 
-  return function(req, res, next) {
+  return function (req, res, next) {
     var request = new Request(req);
     var response = new Response(res);
 
     return Promise.bind(this)
-      .then(function() {
+      .then(function () {
         return server.authorize(request, response, options);
       })
-      .tap(function(code) {
+      .tap(function (code) {
         res.oauth = { code: code };
       })
-      .then(function() {
+      .then(function () {
         return handleResponse(req, res, response);
       })
-      .catch(function(e) {
+      .catch(function (e) {
         return handleError(e, req, res, response);
       })
       .finally(next);
@@ -93,24 +93,24 @@ RestifyOAuthServer.prototype.authorize = function(options) {
  * (See: https://tools.ietf.org/html/rfc6749#section-3.2)
  */
 
-RestifyOAuthServer.prototype.token = function(options) {
+RestifyOAuthServer.prototype.token = function (options) {
   var server = this.server;
 
-  return function(req, res, next) {
+  return function (req, res, next) {
     var request = new Request(req);
     var response = new Response(res);
 
     return Promise.bind(this)
-      .then(function() {
+      .then(function () {
         return server.token(request, response, options);
       })
-      .tap(function(token) {
+      .tap(function (token) {
         res.oauth = { token: token };
       })
-      .then(function() {
+      .then(function () {
         return handleResponse(req, res, response);
       })
-      .catch(function(e) {
+      .catch(function (e) {
         return handleError(e, req, res, response);
       })
       .finally(next);
@@ -121,7 +121,7 @@ RestifyOAuthServer.prototype.token = function(options) {
  * Handle response.
  */
 
-var handleResponse = function(req, res, response) {
+var handleResponse = function (req, res, response) {
   res.set(response.headers);
   res.status(response.status);
   res.send(response.body);
@@ -131,7 +131,7 @@ var handleResponse = function(req, res, response) {
  * Handle error.
  */
 
-var handleError = function(e, req, res, response) {
+var handleError = function (e, req, res, response) {
   if (response) {
     res.set(response.headers);
   }

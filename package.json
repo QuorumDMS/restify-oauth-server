@@ -1,6 +1,6 @@
 {
-  "name": "restify-oauth-server",
-  "version": "0.2.0",
+  "name": "@quorum/restify-oauth-server",
+  "version": "0.3.0",
   "description": "OAuth provider for restify",
   "main": "index.js",
   "scripts": {
