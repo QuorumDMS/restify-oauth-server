@@ -3,12 +3,12 @@
  * Module dependencies.
  */
 
-var InvalidArgumentError = require('oauth2-server/lib/errors/invalid-argument-error');
-var NodeOAuthServer = require('oauth2-server');
+var InvalidArgumentError = require('@quorum/oauth2-server/lib/errors/invalid-argument-error');
+var NodeOAuthServer = require('@quorum/oauth2-server');
 var Promise = require('bluebird');
-var Request = require('oauth2-server').Request;
-var Response = require('oauth2-server').Response;
-var UnauthorizedRequestError = require('oauth2-server/lib/errors/unauthorized-request-error');
+var Request = require('@quorum/oauth2-server').Request;
+var Response = require('@quorum/oauth2-server').Response;
+var UnauthorizedRequestError = require('@quorum/oauth2-server/lib/errors/unauthorized-request-error');
 
 /**
  * Constructor.
@@ -123,8 +123,9 @@ RestifyOAuthServer.prototype.token = function (options) {
 
 var handleResponse = function (req, res, response) {
   res.set(response.headers);
-  res.status(response.status);
-  res.send(response.body);
+  //res.status(response.status);
+  res.tokenData = response.body;
+  //res.send(response.body);
 };
 
 /**
